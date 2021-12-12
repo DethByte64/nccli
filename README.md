@@ -20,22 +20,30 @@ Author: DethByte64
 
   Copy
 
+# Installation
+    git clone https://github.com/DethByte64/nccli/
+    cd nccli
+    termux-fix-shebang
+    chmod +x nccli
+    cp nccli $PREFIX/bin/
+
 # TO-DO:
 
-    Interactive mode
+  Interactive mode
 
-    Search, sort and filter
+  Search, sort and filter
 
-    Comments
+  Comments
 
-    Notifications
+  Notifications
 
-    List shared
+  List shared
 
-    Multiple logins
+  Multiple logins
 
-    User search and statuses
+  User search and statuses
 
 # Why is this a thing?
 
-    Because GUIs SUCK!
+  Because GUIs SUCK!
+
