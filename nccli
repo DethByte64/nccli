@@ -1,0 +1,190 @@
+#!/bin/bash
+# Author: DethByte64
+
+config="$HOME/.config/nccli.conf"
+path=""
+
+request() {
+curl -# -u "$username":"$password" "$uri$path" -X "$@"
+}
+
+usage() {
+echo "Usage: $0 up|dl|ls|rm|mv|cp|mkdir"
+echo
+echo "  up [local file] [remote name]"
+echo "  Uploads a file to target destination"
+echo "  USE WITH CAUTION, overwrites remote files"
+echo
+echo "  dl [remote file]"
+echo "  Downloads a file to the current directory"
+echo
+echo "  ls [remote directory]"
+echo "  List the contents of the current or specified directory"
+echo
+echo "  rm [file\folder]"
+echo "  Deletes a remote file or folder"
+echo "  USE WITH CAUTION"
+echo
+echo "  mv [file] [new path]"
+echo "  Moves a file or folder to a new destination"
+echo
+echo "  cp [file] [new path]"
+echo "  Copies a file or folder to a new destination"
+echo
+echo "  mkdir [folder]"
+echo "  Creates a new folder"
+echo
+echo "  setup"
+echo "  Create a config file with data required to access NextCloud"
+echo
+echo "  help"
+echo "  Display this help page"
+echo
+}
+
+nc_up() {
+path="$2"
+if request PUT -T "$1" > curl.out ; then
+  echo "Success"
+  rm "curl.out"
+else
+  echo "Failure"
+fi
+}
+
+nc_dl() {
+path="$1"
+if request GET; then
+  echo "Success"
+else
+  echo "Failure"
+fi
+}
+
+nc_rm() {
+path="$1"
+if request DELETE; then
+  echo "Success"
+else
+  echo "Failed"
+fi
+}
+
+nc_ls() {
+path="$1"
+request PROPFIND > .search.xml
+read_dom "d:href" .search.xml
+cut -d'/' -f7- < .tmp.txt
+rm .tmp.txt
+}
+
+nc_mv_cp() {
+path="$1"
+newpath="$2"
+if request "$3" -H "Destination: $(echo "$uri" | cut -d'/' -f5-)$newpath"; then
+  echo "Success"
+else
+  echo "Failed"
+fi
+}
+
+nc_mkdir() {
+path="$1"
+if request MKCOL; then
+  echo "Success"
+else
+  echo "Failed"
+fi
+}
+
+read_dom() {
+#echo > .tmp.txt
+PAT="$1"
+  while local IFS='>'; do
+    read -r -d '<' TAG VAL
+    if [ "$TAG" = "/d:multistatus" ]; then
+      break
+    fi
+    if [ "$TAG" = "$PAT" ]; then
+      echo "$VAL" >>.tmp.txt
+    fi
+  done < "$2"
+  rm "$2"
+}
+
+setup() {
+if [ -e "$config" ]; then
+  echo "WARNING: There is already a config file in place."
+  echo "To proceed, move or delete the config file, then run this command again."
+  exit 3
+else
+  echo -n "URI: (eg. http://example.com/nextcloud/)"
+  read -r uri
+  echo -n "Username: "
+  read -r username
+  echo -n "Password: "
+  read -r -s password
+  if [ "$uri" != "" ] || [ "$username" != "" ] || [ "$password" != "" ]; then
+    uri+="remote.php/dav/files/$username/"
+    echo "uri=$uri" > "$config"
+    echo "username=$username" >> "$config"
+    echo "password=$password" >> "$config"
+    echo "Success"
+  else
+    echo "Error: cannot leave this blank. retry."
+    exit 1
+  fi
+fi
+}
+
+if [ ! -e "$config" ]; then
+setup
+fi
+
+while read -r line; do
+  key="$(echo "$line" | cut -d'=' -f1)"
+  value="$(echo "$line" | cut -d'=' -f2)"
+  case $key in
+    username)
+      username="$value";;
+    password)
+      password="$value";;
+    uri)
+      uri="$value";;
+    *)
+      echo "Error: \"$line\" is an invalid config option"
+      exit 1;;
+  esac
+done < "$config"
+
+case "$1" in
+  ls)
+    shift
+    nc_ls "$1";;
+  up)
+    shift
+    nc_up "$1" "$2";;
+  dl)
+    shift
+    nc_dl "$1";;
+  rm)
+    shift
+    nc_rm "$1";;
+  mv)
+    shift
+    nc_mv_cp "$1" "$2" "MOVE";;
+  cp)
+    shift
+    nc_mv_cp "$1" "$2" "COPY";;
+  mkdir)
+    shift
+    nc_mkdir "$1";;
+  setup)
+    setup;;
+  -h|--help|help)
+    usage;;
+  *)
+    echo "Error: \"$1\" is an invalid command line option"
+    usage
+    exit 1;;
+esac
