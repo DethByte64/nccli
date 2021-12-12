@@ -2,25 +2,25 @@
 A CLI Client for NextCloud
 Written in Termux
 
-#Author: DethByte64
+Author: DethByte64
 
-#File Functions:
+# File Functions:
 
-    List
+  List
 
-    Create New
+  Create New
 
-    Delete
+  Delete
 
-    Upload
+  Upload
 
-    Download
+  Download
 
-    Move
+  Move
 
-    Copy
+  Copy
 
-#TO-DO:
+# TO-DO:
 
     Interactive mode
 
@@ -36,6 +36,6 @@ Written in Termux
 
     User search and statuses
 
-#Why is this a thing?
+# Why is this a thing?
 
     Because GUIs SUCK!
