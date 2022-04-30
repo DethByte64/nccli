@@ -21,13 +21,13 @@ Author: DethByte64
   Copy
 
 # Installation
-  # Termux
+## Termux
     git clone https://github.com/DethByte64/nccli/
     cd nccli
     termux-fix-shebang
     chmod +x nccli
     cp nccli $PREFIX/bin/
-  # Linux
+## Linux
     git clone https://github.com/DethByte64/nccli/
     cd nccli
     chmod +x nccli
