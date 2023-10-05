@@ -42,13 +42,29 @@ echo "  Display this help page"
 echo
 }
 
-nc_up() {
-path="$2"
+nc_up_real() {
 if request PUT -T "$1" > curl.out ; then
   echo "Success"
   rm "curl.out"
 else
   echo "Failure"
+fi
+}
+
+nc_up() {
+path="$2"
+if [ -d "$1" ]; then
+for d in $(find "$1" -type d); do
+  echo "mkdir $2$d"
+  nc_mkdir "$2$d"
+  for f in $(find "$d" -maxdepth 1 -type f); do
+    path="$2$f"
+    echo "$f > $2$f"
+    nc_up_real "$f"
+  done
+done
+else
+nc_up_real "$1"
 fi
 }
 
