@@ -173,6 +173,13 @@ while read -r line; do
   esac
 done < "$config"
 
+# check connection
+http_response="$(curl --connect-timeout 5 -sLi "$(echo "$uri" | cut -d'/' -f-4)" | grep 'HTTP' | tail -n 1 | cut -d' ' -f2)"
+if [ "$http_response" != "200" ]; then
+  echo "Couldnt connect to Nextcloid"
+  exit 4
+fi
+
 case "$1" in
   ls)
     shift
