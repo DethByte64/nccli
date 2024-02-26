@@ -70,7 +70,12 @@ fi
 
 nc_dl() {
 path="$1"
-if request GET; then
+if [ ! "$2" ]; then
+  file="${path##*/}"
+else
+  file="$2"
+fi
+if request GET > "$file"; then
   echo "Success"
 else
   echo "Failure"
@@ -189,7 +194,7 @@ case "$1" in
     nc_up "$1" "$2";;
   dl)
     shift
-    nc_dl "$1";;
+    nc_dl "$1" "$2";;
   rm)
     shift
     nc_rm "$1";;
