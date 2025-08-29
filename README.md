@@ -24,7 +24,7 @@ Author: DethByte64
 ## Termux
     git clone https://github.com/DethByte64/nccli/
     cd nccli
-    termux-fix-shebang
+    termux-fix-shebang nccli
     chmod +x nccli
     cp nccli $PREFIX/bin/
 ## Linux
