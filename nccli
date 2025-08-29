@@ -42,7 +42,8 @@ echo "  Display this help page"
 echo
 }
 
-nc_up_real() {
+nc_up() {
+path="$2"
 if request PUT -T "$1" > curl.out ; then
   echo "Success"
   rm "curl.out"
@@ -51,31 +52,9 @@ else
 fi
 }
 
-nc_up() {
-path="$2"
-if [ -d "$1" ]; then
-for d in $(find "$1" -type d); do
-  echo "mkdir $2$d"
-  nc_mkdir "$2$d"
-  for f in $(find "$d" -maxdepth 1 -type f); do
-    path="$2$f"
-    echo "$f > $2$f"
-    nc_up_real "$f"
-  done
-done
-else
-nc_up_real "$1"
-fi
-}
-
 nc_dl() {
 path="$1"
-if [ ! "$2" ]; then
-  file="${path##*/}"
-else
-  file="$2"
-fi
-if request GET > "$file"; then
+if request GET; then
   echo "Success"
 else
   echo "Failure"
@@ -95,7 +74,7 @@ nc_ls() {
 path="$1"
 request PROPFIND > .search.xml
 read_dom "d:href" .search.xml
-cut -d'/' -f7- < .tmp.txt
+cut -d'/' -f6- < .tmp.txt
 rm .tmp.txt
 }
 
@@ -179,7 +158,7 @@ while read -r line; do
 done < "$config"
 
 # check connection
-http_response="$(curl --connect-timeout 5 -sLi "$(echo "$uri" | cut -d'/' -f-4)" | grep 'HTTP' | tail -n 1 | cut -d' ' -f2)"
+http_response="$(curl --connect-timeout 5 -sLI -u "$username":"$password" "$uri" | head -n 1 | cut -d' ' -f2)"
 if [ "$http_response" != "200" ]; then
   echo "Couldnt connect to Nextcloid"
   exit 4
@@ -194,7 +173,7 @@ case "$1" in
     nc_up "$1" "$2";;
   dl)
     shift
-    nc_dl "$1" "$2";;
+    nc_dl "$1";;
   rm)
     shift
     nc_rm "$1";;
